@@ -1,8 +1,5 @@
 import dbus
-
-
-import dbus
-from Constants import *
+from ble.Constants import *
 
 def find_adapter(bus : dbus, adapter: str):
     remote_om = dbus.Interface(bus.get_object(BLUEZ_SERVICE_NAME, '/'),

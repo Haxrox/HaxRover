@@ -10,3 +10,6 @@ GATT_SERVICE_IFACE = 'org.bluez.GattService1'
 GATT_CHRC_IFACE =    'org.bluez.GattCharacteristic1'
 GATT_DESC_IFACE =    'org.bluez.GattDescriptor1'
 LE_ADVERTISEMENT_IFACE = 'org.bluez.LEAdvertisement1'
+
+SERVICE_UUID = '5d9c0da5-75be-4140-94b0-3473b5715c18'
+LOCAL_NAME = 'Haxbook'

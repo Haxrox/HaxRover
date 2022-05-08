@@ -1,6 +1,6 @@
 import dbus
-from Exceptions import *
-from Constants import *
+from ble.Exceptions import *
+from ble.Constants import *
 
 class Service(dbus.service.Object):
     """
