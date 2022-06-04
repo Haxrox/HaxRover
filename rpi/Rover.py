@@ -20,12 +20,12 @@ class State(Enum):
     RIGHT = auto(),
     STOP = auto()
 
-class Car:
+class Rover:
     def __init__(self):
-        if Robot:
+        try:
             self.robot = Robot(right=(22,27), left=(23, 24))
-        else:
-            print("Robot not found. Cannot create class")
+        except:
+            print("Cannot create Rover.robot")
 
         self.state = State.STOP
         self.target = time.time_ns()
@@ -33,7 +33,7 @@ class Car:
         self.running = False
     
     def run(self):
-        if (self.robot):
+        try:
             self.running = True
             # state machine for robot movement
             while self.running:
@@ -55,6 +55,8 @@ class Car:
                         self.forward(self.distance)
                 elif (self.state == State.STOP):
                     self.robot.stop()
+        except:
+            print("Run error")
     
     def rotate_left(self, angle, distance):     
         # changes robot state

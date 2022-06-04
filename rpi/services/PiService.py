@@ -5,10 +5,15 @@ from ble.Characteristic import Characteristic
 from ble.Descriptor import Descriptor
 from ble.Constants import *
 
+from Rover import Rover
+from threading import Thread
+
 class PiService(Service):
     def __init__(self, bus, index):
         Service.__init__(self, bus, index, PI_SERVICE_UUID, True)
         self.add_characteristic(PiCharacteristic(bus, 0, self))
+        self.rover = Rover()
+        Thread(target=self.rover.run).start()
 
 class PiCharacteristic(Characteristic):
     def __init__(self, bus, index, service):
@@ -22,7 +27,17 @@ class PiCharacteristic(Characteristic):
 
     def WriteValue(self, value, options):
         print('PiCharacteristic Write: ' + repr(value))
+        print("PiCharacteristic options: " + repr(options))
+        print("Device: " + repr(options['device']))
+        # print("ToString [" + len(value) + "]: " + repr(value[0]))
+        print("2 bytes: " + str(value[0:2]))
+
         self.value = value
+        
+        direction = 'go_' + (''.join([str(v).lower() for v in self.value]))
+        print("value: %s" % direction)
+
+
 
 class PiDescriptor(Descriptor):
     def __init__(self, bus, index, characteristic):
