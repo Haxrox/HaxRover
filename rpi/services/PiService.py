@@ -5,15 +5,11 @@ from ble.Characteristic import Characteristic
 from ble.Descriptor import Descriptor
 from ble.Constants import *
 
-from Rover import Rover
-from threading import Thread
-
 class PiService(Service):
-    def __init__(self, bus, index):
+    def __init__(self, bus, index, rover):
         Service.__init__(self, bus, index, PI_SERVICE_UUID, True)
         self.add_characteristic(PiCharacteristic(bus, 0, self))
-        self.rover = Rover()
-        Thread(target=self.rover.run).start()
+        self.rover = rover
 
 class PiCharacteristic(Characteristic):
     def __init__(self, bus, index, service):
@@ -37,10 +33,10 @@ class PiCharacteristic(Characteristic):
         direction = 'go_' + (''.join([str(v).lower() for v in self.value]))
         print("value: %s" % direction)
 
-        if (direction in self.rover):
+        try:
             getattr(self.rover, direction)()
-
-
+        except:
+            print("Invalid command: " + direction)
 
 class PiDescriptor(Descriptor):
     def __init__(self, bus, index, characteristic):
