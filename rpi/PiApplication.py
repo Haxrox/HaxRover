@@ -1,11 +1,14 @@
 import dbus
 import dbus.service
 from gi.repository import GLib
+from threading import Thread
 
 from ble.Constants import *
 from ble.Exceptions import *
 
 from services.PiService import PiService
+
+from Rover import Rover
 
 class PiApplication(dbus.service.Object):
     """
@@ -16,7 +19,10 @@ class PiApplication(dbus.service.Object):
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
         
-        self.add_service(PiService(bus, 0))
+        rover = Rover()
+        Thread(target=rover.run).start()
+
+        self.add_service(PiService(bus, 0, rover))
 
     def get_path(self):
         return dbus.ObjectPath(self.path)
