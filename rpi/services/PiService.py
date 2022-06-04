@@ -37,6 +37,9 @@ class PiCharacteristic(Characteristic):
         direction = 'go_' + (''.join([str(v).lower() for v in self.value]))
         print("value: %s" % direction)
 
+        if (direction in self.rover):
+            getattr(self.rover, direction)()
+
 
 
 class PiDescriptor(Descriptor):
