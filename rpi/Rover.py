@@ -23,7 +23,7 @@ class State(Enum):
 class Rover:
     def __init__(self):
         try:
-            self.robot = Robot(right=(22,27), left=(23, 24))
+            self.robot = Robot(left=(21, 16, 12), right=(26, 19, 13))
         except:
             print("Cannot create Rover.robot")
 
