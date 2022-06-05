@@ -42,9 +42,9 @@ class Rover:
                 if (self.state == State.STOP):
                     self.robot.stop()
                 elif (self.state == State.UP):
-                    self.robot.backward()
-                elif (self.state == State.DOWN):
                     self.robot.forward()
+                elif (self.state == State.DOWN):
+                    self.robot.backward()
                 elif (self.state == State.LEFT or self.state == State.ROTATE_LEFT):
                     self.robot.left()
                     if (self.state == State.ROTATE_LEFT and time.time_ns() >= self.target):
