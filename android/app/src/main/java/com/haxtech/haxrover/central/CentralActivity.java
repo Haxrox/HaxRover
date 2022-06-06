@@ -11,8 +11,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +39,7 @@ public class CentralActivity extends AppCompatActivity {
     private Button btnStop;
     // button for send data
     private Button btnSend;
+    private EditText dataField;
 
     private Button btnRead;
 
@@ -108,6 +111,8 @@ public class CentralActivity extends AppCompatActivity {
 
         btnRead = findViewById(R.id.btnRead);
 
+        dataField = findViewById(R.id.dataField);
+
         btnScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,12 +132,14 @@ public class CentralActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Calendar calendar = Calendar.getInstance();
                 String todayTime = (calendar.get(Calendar.MONTH) + 1)
-                        + "월" + calendar.get(Calendar.DAY_OF_MONTH)
-                        + "일 " + calendar.get(Calendar.HOUR_OF_DAY)
+                        + calendar.get(Calendar.DAY_OF_MONTH)
+                        + calendar.get(Calendar.HOUR_OF_DAY)
                         + ":" + calendar.get(Calendar.MINUTE)
                         + ":" + calendar.get(Calendar.SECOND);
 
-                CentralManager.getInstance(CentralActivity.this).sendData(todayTime);
+                Editable data = dataField.getText();
+
+                CentralManager.getInstance(CentralActivity.this).sendData(data.length() > 0 ? data.toString() : todayTime);
             }
         });
 
