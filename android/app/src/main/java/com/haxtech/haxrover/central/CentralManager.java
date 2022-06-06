@@ -1,6 +1,7 @@
 package com.haxtech.haxrover.central;
 
 import static com.haxtech.haxrover.Constants.CHARACTERISTIC_UUID;
+import static com.haxtech.haxrover.Constants.CONFIG_UUID;
 import static com.haxtech.haxrover.Constants.SCAN_PERIOD;
 import static com.haxtech.haxrover.Constants.SERVICE_UUID;
 
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class CentralManager {
     private final String TAG = CentralManager.class.getSimpleName();
@@ -359,10 +362,23 @@ public class CentralManager {
             // log for successful discovery
             Log.d(TAG, "Services discovery is successful");
 
-            // Set CharacteristicNotification
-//            BluetoothGattCharacteristic cmd_characteristic = BluetoothUtils.findCharacteristic(bleGatt, CHARACTERISTIC_UUID);
-//            _gatt.setCharacteristicNotification(cmd_characteristic, true);
+//             Set CharacteristicNotification
+            BluetoothGattCharacteristic cmd_characteristic = BluetoothUtils.findCharacteristic(bleGatt, CHARACTERISTIC_UUID);
+            boolean setSuccess = _gatt.setCharacteristicNotification(cmd_characteristic, true);
+
+            Log.i(TAG, "SetCharacteristicNotification: " + setSuccess);
 //             리시버 설정
+            cmd_characteristic.getDescriptors().forEach(descriptor -> {
+                System.out.println(descriptor.getUuid());
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                boolean success = _gatt.writeDescriptor(descriptor);
+                if (success) {
+                    Log.e(TAG, "writeCharacteristic success");
+                } else {
+                    Log.e(TAG, "writeCharacteristic fail");
+                }
+            });
+
 //            BluetoothGattDescriptor descriptor = cmd_characteristic.getDescriptor(UUID.fromString(CONFIG_UUID));
 //            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 //            boolean success = _gatt.writeDescriptor(descriptor);
