@@ -6,7 +6,7 @@ class Service(dbus.service.Object):
     """
     org.bluez.GattService1 interface implementation
     """
-    PATH_BASE = '/org/bluez/example/service'
+    PATH_BASE = '/org/bluez/haxrover/service'
 
     def __init__(self, bus, index, uuid, primary):
         self.path = self.PATH_BASE + str(index)

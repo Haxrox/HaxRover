@@ -6,23 +6,23 @@ from threading import Thread
 from ble.Constants import *
 from ble.Exceptions import *
 
-from services.PiService import PiService
+from services.RoverService import RoverService
 
 from Rover import Rover
 
-class PiApplication(dbus.service.Object):
+class RoverApplication(dbus.service.Object):
     """
     org.bluez.GattApplication1 interface implementation
     """
     def __init__(self, bus):
-        self.path = '/pi'
+        self.path = '/haxrover'
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
         
         rover = Rover()
         Thread(target=rover.run).start()
 
-        self.add_service(PiService(bus, 0, rover))
+        self.add_service(RoverService(bus, 0, rover))
 
     def get_path(self):
         return dbus.ObjectPath(self.path)
@@ -46,8 +46,8 @@ class PiApplication(dbus.service.Object):
         return response
 
     def register_callback(self):
-        print("PiApplication Registered - " + self.get_path())
+        print("RoverApplication Registered - " + self.get_path())
 
     def register_error_callback(self, mainloop, error):
         mainloop.quit()
-        raise ErrorException(f"Failed to register PiApplication @ {self.get_path()} - {error}")
+        raise ErrorException(f"Failed to register RoverApplication @ {self.get_path()} - {error}")

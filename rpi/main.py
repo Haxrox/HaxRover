@@ -10,8 +10,8 @@ from ble.Utils import *
 from ble.Constants import *
 from ble.Exceptions import *
 
-from PiAdvertisement import PiAdvertisement
-from PiApplication import PiApplication
+from RoverAdvertisement import RoverAdvertisement
+from RoverApplication import RoverApplication
 
 mainloop = None
 
@@ -40,7 +40,7 @@ def init_advertising(bus):
 
     advertisement_manager = dbus.Interface(bus.get_object(BLUEZ_SERVICE_NAME, advertisement_adapter), LE_ADVERTISING_MANAGER_IFACE)
     
-    pi_advertisement = PiAdvertisement(bus, 0)
+    pi_advertisement = RoverAdvertisement(bus, 0)
 
     advertisement_manager.RegisterAdvertisement(pi_advertisement.get_path(), {},
         reply_handler = partial(pi_advertisement.register_callback),
@@ -66,19 +66,30 @@ def init_gatt_server(bus):
     
     gatt_manager = dbus.Interface(bus.get_object(BLUEZ_SERVICE_NAME, gatt_adapter), GATT_MANAGER_IFACE)
 
-    pi_application = PiApplication(bus)
+    rover_application = RoverApplication(bus)
 
-    gatt_manager.RegisterApplication(pi_application.get_path(), {},
-        reply_handler = partial(pi_application.register_callback),
-        error_handler = partial(pi_application.register_error_callback, mainloop)
+    gatt_manager.RegisterApplication(rover_application.get_path(), {},
+        reply_handler = partial(rover_application.register_callback),
+        error_handler = partial(rover_application.register_error_callback, mainloop)
     )
 
-    return gatt_manager, pi_application
+    return gatt_manager, rover_application
 
 def deinit_gatt_server(gatt_manager, application):
     print("Deinitialize GATT Server")
     print(f"Unregistered Application - {application.get_path()}")
     gatt_manager.UnregisterApplication(application)
+
+def interfaces_added_cb(object_path, interfaces):
+    print("Interface added: " + object_path)
+
+def interfaces_removed_cb(object_path, interfaces):
+    print("Interface removed: " + object_path)
+
+def init_object_manager(bus):
+    object_manager = dbus.Interface(bus.get_object(BLUEZ_SERVICE_NAME, '/'), DBUS_OM_IFACE)
+    object_manager.connect_to_signal('InterfacesAdded', interfaces_added_cb)
+    object_manager.connect_to_signal('InterfacesRemoved', interfaces_removed_cb)
 
 def main():
     DBusGMainLoop(set_as_default=True)
@@ -89,6 +100,7 @@ def main():
 
     advertisement_manager, advertisements = init_advertising(bus)
     gatt_manager, application = init_gatt_server(bus)
+    init_object_manager(bus)
 
     signal.signal(signal.SIGINT, sigint_handler)
 

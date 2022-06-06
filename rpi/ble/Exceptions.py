@@ -15,11 +15,11 @@ class InvalidValueLengthException(dbus.exceptions.DBusException):
 class FailedException(dbus.exceptions.DBusException):
     _dbus_error_name = 'org.bluez.Error.Failed'
 
-class NotFoundException():
+class NotFoundException(BaseException):
     def __init__(self, error: str):
         self.Error = error
         print(f"Error: {error}")
 
-class ErrorException():
+class ErrorException(BaseException):
     def __init__(self, error):
         self.Error = print(f"Error: {error}")

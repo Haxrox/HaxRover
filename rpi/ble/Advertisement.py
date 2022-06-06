@@ -5,7 +5,7 @@ from ble.Exceptions import *
 from ble.Constants import *
 
 class Advertisement(dbus.service.Object):
-    PATH_BASE = '/org/bluez/example/advertisement'
+    PATH_BASE = '/org/bluez/haxrover/advertisement'
 
     def __init__(self, bus, index, advertising_type):
         self.path = self.PATH_BASE + str(index)

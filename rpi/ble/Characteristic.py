@@ -78,4 +78,9 @@ class Characteristic(dbus.service.Object):
     @dbus.service.signal(DBUS_PROP_IFACE,
                          signature='sa{sv}as')
     def PropertiesChanged(self, interface, changed, invalidated):
-        pass
+        print('Default PropertiesChanged called')
+        print("Interface: " + repr(interface))
+        print("Changed: " + repr(changed))
+        print("Invalidated: " + repr(invalidated))
+
+        return True
