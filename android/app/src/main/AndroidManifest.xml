@@ -26,6 +26,10 @@
         </activity>
 
         <activity
+            android:name="com.haxtech.haxrover.haxrover.RoverActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
         android:name="com.haxtech.haxrover.central.CentralActivity"
         android:screenOrientation="portrait"/>
 

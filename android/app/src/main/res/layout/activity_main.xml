@@ -15,9 +15,16 @@
         android:padding="50dp">
 
         <Button
+            android:id="@+id/btnRover"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="HaxRover" />
+
+        <Button
             android:id="@+id/btnCentral"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:layout_marginTop="50dp"
             android:text="Central" />
 
         <Button

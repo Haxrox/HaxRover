@@ -9,11 +9,12 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.haxtech.haxrover.central.CentralActivity;
+import com.haxtech.haxrover.haxrover.RoverActivity;
 import com.haxtech.haxrover.peripheral.PeripheralActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnCentral, btnPeripheral;
+    private Button btnCentral, btnPeripheral, btnRover;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +32,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        btnRover = (Button) findViewById(R.id.btnRover);
         btnCentral = (Button) findViewById(R.id.btnCentral);
         btnPeripheral = (Button) findViewById(R.id.btnPeripheral);
+
+        btnRover.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RoverActivity.class));
+            }
+        });
 
         btnCentral.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,5 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, PeripheralActivity.class));
             }
         });
+
+
     }
 }
