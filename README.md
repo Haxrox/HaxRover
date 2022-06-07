@@ -4,7 +4,7 @@
 - Figure out why descriptors cannot be added to services
 
 # Resources
-[Android BLE Exam](https://github.com/rhalwls/BleExam/tree/662fd3a2074e23e04c867f31ba1386b81fd18123/app/src/main/java/com/exam/ble)
+[Android BLE Exam](https://github.com/rhalwls/BleExam/tree/662fd3a2074e23e04c867f31ba1386b81fd18123)
 
 [BlueZ](https://github.com/bluez/bluez)
 
