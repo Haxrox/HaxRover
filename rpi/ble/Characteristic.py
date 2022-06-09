@@ -65,6 +65,16 @@ class Characteristic(dbus.service.Object):
         print('Default WriteValue called, returning error')
         raise NotSupportedException()
 
+    @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
+    def AcquireWrite(self, options):
+        print('Default AcquireWrite called, returning error')
+        raise NotSupportedException()
+
+    @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
+    def AcquireNotify(self, options):
+        print('Default AcquireNotify called, returning error')
+        raise NotSupportedException()
+
     @dbus.service.method(GATT_CHRC_IFACE)
     def StartNotify(self):
         print('Default StartNotify called, returning error')
