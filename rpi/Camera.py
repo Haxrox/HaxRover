@@ -7,12 +7,12 @@ try:
     from picamera.array import PiRGBArray
     from picamera import PiCamera, BufferIO
 except ImportError:
-    print("PiCamera or cv2 not installed")
+    print("PiCamera not installed")
 
 import time
 
 # constants
-FRAME_SIZE = 510
+FRAME_SIZE = 255
 FRAMERATE = 24
 HEIGHT = 640
 WIDTH = 480
@@ -97,7 +97,6 @@ class Camera:
                 self.camera.capture(stream, format="jpeg", use_video_port=True)
                 self.parse(stream)
                 stream.close()
-                print(len(self.queue))
                 return self.queue.get()
         else:
             return self.queue.get()
