@@ -12,7 +12,7 @@ except ImportError:
 import time
 
 # constants
-FRAME_SIZE = 515
+FRAME_SIZE = 510
 FRAMERATE = 24
 HEIGHT = 640
 WIDTH = 480
