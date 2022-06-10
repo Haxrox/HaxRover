@@ -60,7 +60,7 @@ class Camera:
                     for offset in range(0, len(buffer) - parsedBytes):
                         frame.append(buffer[parsedBytes + offset])
 
-                    parsedBytes += len(buffer) - parsedBytes
+                    parsedBytes += (len(buffer) - parsedBytes)
 
                 self.queue.put(frame)
             

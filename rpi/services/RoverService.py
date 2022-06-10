@@ -64,13 +64,13 @@ class RoverCharacteristic(Characteristic):
         #     print("failed to notify characteristic changed")
 
     def notify(self):
-        print("Notify")
         if self.notifying:
             try:
                 pdu = []
                 for byte in self.camera.get():
                     # print("Byte: " + repr(byte))
                     pdu.append(dbus.Byte(byte))
+                print("Notify: " + repr(len(pdu)))
                 self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': pdu}, [])
                 GLib.timeout_add(0, self.notify)
             except Exception as e: 
