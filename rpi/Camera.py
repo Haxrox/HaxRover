@@ -49,7 +49,7 @@ class Camera:
                 frame = []
                 if (len(buffer) - parsedBytes) > FRAME_SIZE:
                     frame.append(1)
-                    frame.append((1024).to_bytes(FRAME_SIZE, byteorder='little'))
+                    frame.append(FRAME_SIZE)
                     
                     for offset in range(0, FRAME_SIZE):
                         frame.append(buffer[parsedBytes + offset])
@@ -57,7 +57,7 @@ class Camera:
                     parsedBytes += FRAME_SIZE
                 else:
                     frame.append(0)
-                    frame.append((1024).to_bytes(len(buffer) - parsedBytes, byteorder='little'))
+                    frame.append(len(buffer) - parsedBytes)
 
                     for offset in range(0, len(buffer) - parsedBytes):
                         frame.append(buffer[parsedBytes + offset])
@@ -92,10 +92,12 @@ class Camera:
                 self.counter = self.counter + 1
                 return bytearray(str(self.counter), "utf-8")
             else:
+                print("One image")
                 stream = io.BytesIO()
                 self.camera.capture(stream, format="jpeg", use_video_port=True)
                 self.parse(stream)
                 stream.close()
+                print(len(self.queue))
                 return self.queue.get()
         else:
             return self.queue.get()
