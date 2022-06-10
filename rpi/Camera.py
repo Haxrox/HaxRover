@@ -39,12 +39,12 @@ class Camera:
         try:
             stream.seek(0)
             buffer = stream.getvalue()
-            # print("Length: " + str(len(buffer)))
+            print("Length: " + str(len(buffer)))
 
             parsedBytes = 0
 
             while (parsedBytes < len(buffer)):
-                # print("ParsedBytes: " + str(parsedBytes))
+                print("ParsedBytes: " + str(parsedBytes))
                 
                 frame = []
                 if (len(buffer) - parsedBytes) > FRAME_SIZE:
