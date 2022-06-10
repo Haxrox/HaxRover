@@ -49,6 +49,7 @@ class Camera:
                 frame = []
                 if (len(buffer) - parsedBytes) > FRAME_SIZE:
                     frame.append(1)
+                    frame.append((1024).to_bytes(FRAME_SIZE, byteorder='little'))
                     
                     for offset in range(0, FRAME_SIZE):
                         frame.append(buffer[parsedBytes + offset])
@@ -56,7 +57,8 @@ class Camera:
                     parsedBytes += FRAME_SIZE
                 else:
                     frame.append(0)
-                    
+                    frame.append((1024).to_bytes(len(buffer) - parsedBytes, byteorder='little'))
+
                     for offset in range(0, len(buffer) - parsedBytes):
                         frame.append(buffer[parsedBytes + offset])
 
