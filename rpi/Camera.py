@@ -57,7 +57,7 @@ class Camera:
                     parsedBytes += FRAME_SIZE
                 else:
                     frame.append(0)
-                    frame.append((1024).to_bytes(len(buffer) - parsedBytes, byteorder='big'))
+                    frame.append((1024).to_bytes(len(buffer) - parsedBytes, byteorder='little'))
 
                     for offset in range(0, len(buffer) - parsedBytes):
                         frame.append(buffer[parsedBytes + offset])
@@ -102,6 +102,7 @@ class Camera:
 
     def stop(self):
         self.capturing = False
+        self.queue = Queue(0)
 
     def close(self):
         if hasattr(self, "camera"):
