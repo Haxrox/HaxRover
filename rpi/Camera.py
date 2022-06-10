@@ -52,6 +52,8 @@ class Camera:
                     
                     for offset in range(0, FRAME_SIZE):
                         frame.append(buffer[parsedBytes + offset])
+
+                    parsedBytes += FRAME_SIZE
                 else:
                     frame.append(0)
                     
