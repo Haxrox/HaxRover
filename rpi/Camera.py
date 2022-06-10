@@ -35,8 +35,12 @@ class Camera:
         # allow the camera to warmup
         time.sleep(0.1)
 
-    def parse(self, buffer):
-        print("Parse frame")
+    def parse(self, stream):
+        print("Parse frame: " + repr(stream))
+        
+        stream.seek(0)
+        buffer = stream.getvalue()
+        
         print("Length: " + len(buffer))
         parsedBytes = 0
 
@@ -51,8 +55,10 @@ class Camera:
                 frame[0] = 0
                 frame[1:] = buffer[parsedBytes:]
                 parsedBytes += len(buffer) - parsedBytes
-                
+
             self.queue.put(frame)
+        
+        stream.truncate(0)
 
     def run(self):
         try:
@@ -61,12 +67,7 @@ class Camera:
             stream = io.BytesIO()
             for frame in self.camera.capture_continuous(stream, format="jpeg", use_video_port=True):
                 if self.capturing:
-                    stream.seek(0)
-                    
-                    self.parse(stream.read())
-
-                    stream.seek(0)
-                    stream.truncate()
+                    self.parse(stream)
                 else:
                     break
             
@@ -82,10 +83,7 @@ class Camera:
             else:
                 stream = io.BytesIO()
                 self.camera.capture(stream, format="rgb", use_video_port=True)
-                
-                stream.seek(0)
-                self.parse(stream.read())
-                stream.seek(0)
+                self.parse(stream)
                 stream.close()
                 return self.queue.get()
         else:
