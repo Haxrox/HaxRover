@@ -43,11 +43,11 @@ class Camera:
 
             parsedBytes = 0
 
-            while (len(buffer) > 0):
+            while (parsedBytes < len(buffer)):
                 print("ParsedBytes: " + str(parsedBytes))
                 
                 frame = []
-                if len(buffer) > FRAME_SIZE:
+                if (len(buffer) - parsedBytes) > FRAME_SIZE:
                     frame.append(1)
                     
                     for offset in range(0, FRAME_SIZE):
