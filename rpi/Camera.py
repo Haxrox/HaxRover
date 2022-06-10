@@ -36,11 +36,14 @@ class Camera:
         time.sleep(0.1)
 
     def parse(self, buffer):
+        print("Parse frame")
+        print("Length: " + len(buffer))
         parsedBytes = 0
 
         while (parsedBytes < len(buffer)):
+            print("ParsedBytes: " + parsedBytes)
             frame = []
-            if len(buffer) > FRAME_SIZE:
+            if (len(buffer) - parsedBytes) > FRAME_SIZE:
                 frame[0] = 1
                 frame[1:] = buffer[parsedBytes: (parsedBytes + FRAME_SIZE)]
                 parsedBytes += FRAME_SIZE
@@ -48,6 +51,7 @@ class Camera:
                 frame[0] = 0
                 frame[1:] = buffer[parsedBytes:]
                 parsedBytes += len(buffer) - parsedBytes
+                
             self.queue.put(frame)
 
     def run(self):
@@ -65,6 +69,7 @@ class Camera:
                     stream.truncate()
                 else:
                     break
+            
             stream.close()
         except:
             print("Camera Run Error")
