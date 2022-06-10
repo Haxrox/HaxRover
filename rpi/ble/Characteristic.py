@@ -85,12 +85,12 @@ class Characteristic(dbus.service.Object):
         print('Default StopNotify called, returning error')
         raise NotSupportedException()
 
-    # @dbus.service.signal(DBUS_PROP_IFACE,
-    #                      signature='sa{sv}as')
-    # def PropertiesChanged(self, interface, changed, invalidated):
-    #     # print('Default PropertiesChanged called')
-    #     # print("Interface: " + repr(interface))
-    #     # print("Changed: " + repr(changed))
-    #     # print("Invalidated: " + repr(invalidated))
+    @dbus.service.signal(DBUS_PROP_IFACE,
+                         signature='sa{sv}as')
+    def PropertiesChanged(self, interface, changed, invalidated):
+        # print('Default PropertiesChanged called')
+        # print("Interface: " + repr(interface))
+        # print("Changed: " + repr(changed))
+        # print("Invalidated: " + repr(invalidated))
 
-    #     return True
+        return True
