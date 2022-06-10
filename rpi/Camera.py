@@ -41,7 +41,7 @@ class Camera:
             stream.seek(0)
             print("Stream seek")
             buffer = stream.getvalue()
-            print("Length: " + len(buffer))
+            print("Length: " + str(len(buffer)))
             parsedBytes = 0
 
             while (parsedBytes < len(buffer)):
