@@ -130,7 +130,7 @@ def main():
     cameraThread.daemon = True
     
     roverThread.start()
-    cameraThread.start()
+    # cameraThread.start()
 
     global application
     advertisement_manager, advertisements = init_advertising(bus)
