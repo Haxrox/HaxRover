@@ -40,19 +40,20 @@ class Camera:
             stream.seek(0)
             buffer = stream.getvalue()
             print("Length: " + str(len(buffer)))
-            parsedBytes = 0
 
-            while (parsedBytes < len(buffer)):
-                print("ParsedBytes: " + str(parsedBytes))
+            while (len(buffer) > 0):
+                print("ParsedBytes: " + str(len(buffer)))
+                
                 frame = []
-                if (len(buffer) - parsedBytes) > FRAME_SIZE:
-                    frame[0] = 1
-                    frame[1:] = buffer[parsedBytes: (parsedBytes + FRAME_SIZE)]
-                    parsedBytes += FRAME_SIZE
+                if len(buffer) > FRAME_SIZE:
+                    frame.append(1)
+                    
+                    for _ in range(0, FRAME_SIZE):
+                        frame.append(buffer.pop())
+                
                 else:
-                    frame[0] = 0
-                    frame[1:] = buffer[parsedBytes:]
-                    parsedBytes += len(buffer) - parsedBytes
+                    frame = buffer
+                    frame.insert(0, 1)
 
                 self.queue.put(frame)
             
