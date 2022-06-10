@@ -1,12 +1,11 @@
 # import the necessary packages
 from queue import Queue
-import base64
+import io
 import dbus
 
 try:
     from picamera.array import PiRGBArray
     from picamera import PiCamera
-    import cv2  # opencv-python
 except ImportError:
     print("PiCamera or cv2 not installed")
 
@@ -29,7 +28,6 @@ class Camera:
             self.camera = PiCamera()
             self.camera.resolution = (HEIGHT, WIDTH)
             self.camera.framerate = FRAMERATE
-            self.rawCapture = PiRGBArray(self.camera, size=(HEIGHT, WIDTH))
         except:
             print("Cannot create PiCamera")
             self.counter = 0
@@ -37,36 +35,37 @@ class Camera:
         # allow the camera to warmup
         time.sleep(0.1)
 
+    def parse(self, buffer):
+        parsedBytes = 0
+
+        while (parsedBytes < len(buffer)):
+            frame = []
+            if len(buffer) > FRAME_SIZE:
+                frame[0] = 1
+                frame[1:] = buffer[parsedBytes: (parsedBytes + FRAME_SIZE)]
+                parsedBytes += FRAME_SIZE
+            else:
+                frame[0] = 0
+                frame[1:] = buffer[parsedBytes:]
+                parsedBytes += len(buffer) - parsedBytes
+            self.queue.put(frame)
+
     def run(self):
         try:
             self.capturing = True
             # capture frames from the camera
-            for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
+            stream = io.BytesIO()
+            for frame in self.camera.capture_continuous(stream, format="jpeg", use_video_port=True):
                 if self.capturing:
-                    # grab the raw NumPy array representing the image, then initialize the timestamp
-                    # and occupied/unoccupied text
-                    image = frame.array
-                    # encode the frame as jpg and send the bytes
-                    buffer = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 45])[1].tobytes()
+                    stream.seek(0)
+                    
+                    self.parse(stream.read())
 
-                    parsedBytes = 0
-
-                    while (parsedBytes < len(buffer)):
-                        frame = []
-                        if len(buffer) > FRAME_SIZE:
-                            frame[0] = 1
-                            frame[1:] = buffer[parsedBytes: (parsedBytes + FRAME_SIZE)]
-                            parsedBytes += FRAME_SIZE
-                        else:
-                            frame[0] = 0
-                            frame[1:] = buffer[parsedBytes:]
-                            parsedBytes += len(buffer) - parsedBytes
-                        self.queue.put(frame)
-                    # clear the stream in preparation for the next frame
-                    self.rawCapture.truncate(0)
-                    # return buffer
+                    stream.seek(0)
+                    stream.truncate()
                 else:
                     break
+            stream.close()
         except:
             print("Camera Run Error")
 
@@ -76,7 +75,14 @@ class Camera:
                 self.counter = self.counter + 1
                 return bytearray(str(self.counter), "utf-8")
             else:
-                return []
+                stream = io.BytesIO()
+                self.camera.capture(stream, format="rgb", use_video_port=True)
+                
+                stream.seek(0)
+                self.parse(stream.read())
+                stream.seek(0)
+                stream.close()
+                return self.queue.get()
         else:
             return self.queue.get()
 
