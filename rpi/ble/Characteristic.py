@@ -65,15 +65,15 @@ class Characteristic(dbus.service.Object):
         print('Default WriteValue called, returning error')
         raise NotSupportedException()
 
-    @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
-    def AcquireWrite(self, options):
-        print('Default AcquireWrite called, returning error')
-        raise NotSupportedException()
+    # @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
+    # def AcquireWrite(self, options):
+    #     print('Default AcquireWrite called, returning error')
+    #     raise NotSupportedException()
 
-    @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
-    def AcquireNotify(self, options):
-        print('Default AcquireNotify called, returning error')
-        raise NotSupportedException()
+    # @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
+    # def AcquireNotify(self, options):
+    #     print('Default AcquireNotify called, returning error')
+    #     raise NotSupportedException()
 
     @dbus.service.method(GATT_CHRC_IFACE)
     def StartNotify(self):
@@ -85,12 +85,12 @@ class Characteristic(dbus.service.Object):
         print('Default StopNotify called, returning error')
         raise NotSupportedException()
 
-    @dbus.service.signal(DBUS_PROP_IFACE,
-                         signature='sa{sv}as')
-    def PropertiesChanged(self, interface, changed, invalidated):
-        print('Default PropertiesChanged called')
-        print("Interface: " + repr(interface))
-        print("Changed: " + repr(changed))
-        print("Invalidated: " + repr(invalidated))
+    # @dbus.service.signal(DBUS_PROP_IFACE,
+    #                      signature='sa{sv}as')
+    # def PropertiesChanged(self, interface, changed, invalidated):
+    #     # print('Default PropertiesChanged called')
+    #     # print("Interface: " + repr(interface))
+    #     # print("Changed: " + repr(changed))
+    #     # print("Invalidated: " + repr(invalidated))
 
-        return True
+    #     return True
