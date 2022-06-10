@@ -37,15 +37,13 @@ class Camera:
 
     def parse(self, stream):
         try:
-            print("Parse frame")
             stream.seek(0)
-            print("Stream seek")
             buffer = stream.getvalue()
             print("Length: " + str(len(buffer)))
             parsedBytes = 0
 
             while (parsedBytes < len(buffer)):
-                print("ParsedBytes: " + parsedBytes)
+                print("ParsedBytes: " + str(parsedBytes))
                 frame = []
                 if (len(buffer) - parsedBytes) > FRAME_SIZE:
                     frame[0] = 1
