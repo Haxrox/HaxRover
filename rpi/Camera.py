@@ -12,7 +12,7 @@ except ImportError:
 import time
 
 # constants
-FRAME_SIZE = 255
+FRAME_SIZE = 515
 FRAMERATE = 24
 HEIGHT = 640
 WIDTH = 480
@@ -49,7 +49,6 @@ class Camera:
                 frame = []
                 if (len(buffer) - parsedBytes) > FRAME_SIZE:
                     frame.append(1)
-                    frame.append(FRAME_SIZE)
                     
                     for offset in range(0, FRAME_SIZE):
                         frame.append(buffer[parsedBytes + offset])
