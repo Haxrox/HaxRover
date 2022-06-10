@@ -5,7 +5,7 @@ import dbus
 
 try:
     from picamera.array import PiRGBArray
-    from picamera import PiCamera
+    from picamera import PiCamera, BufferIO
 except ImportError:
     print("PiCamera or cv2 not installed")
 
@@ -36,29 +36,32 @@ class Camera:
         time.sleep(0.1)
 
     def parse(self, stream):
-        print("Parse frame: " + repr(stream))
-        
-        stream.seek(0)
-        buffer = stream.getvalue()
-        
-        print("Length: " + len(buffer))
-        parsedBytes = 0
+        try:
+            print("Parse frame")
+            stream.seek(0)
+            print("Stream seek")
+            buffer = stream.getvalue()
+            print("Length: " + len(buffer))
+            parsedBytes = 0
 
-        while (parsedBytes < len(buffer)):
-            print("ParsedBytes: " + parsedBytes)
-            frame = []
-            if (len(buffer) - parsedBytes) > FRAME_SIZE:
-                frame[0] = 1
-                frame[1:] = buffer[parsedBytes: (parsedBytes + FRAME_SIZE)]
-                parsedBytes += FRAME_SIZE
-            else:
-                frame[0] = 0
-                frame[1:] = buffer[parsedBytes:]
-                parsedBytes += len(buffer) - parsedBytes
+            while (parsedBytes < len(buffer)):
+                print("ParsedBytes: " + parsedBytes)
+                frame = []
+                if (len(buffer) - parsedBytes) > FRAME_SIZE:
+                    frame[0] = 1
+                    frame[1:] = buffer[parsedBytes: (parsedBytes + FRAME_SIZE)]
+                    parsedBytes += FRAME_SIZE
+                else:
+                    frame[0] = 0
+                    frame[1:] = buffer[parsedBytes:]
+                    parsedBytes += len(buffer) - parsedBytes
 
-            self.queue.put(frame)
-        
-        stream.truncate(0)
+                self.queue.put(frame)
+            
+            stream.seek(0)
+            stream.truncate(0)
+        except Exception as e:
+            print("Error: " + str(e))
 
     def run(self):
         try:
@@ -82,7 +85,7 @@ class Camera:
                 return bytearray(str(self.counter), "utf-8")
             else:
                 stream = io.BytesIO()
-                self.camera.capture(stream, format="rgb", use_video_port=True)
+                self.camera.capture(stream, format="jpeg", use_video_port=True)
                 self.parse(stream)
                 stream.close()
                 return self.queue.get()
