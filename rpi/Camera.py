@@ -139,8 +139,16 @@ class StreamingQueue(object):
             self.buffer.seek(0)
         return self.buffer.write(data)
 
+    def flush(self):
+        self.buffer.flush()
+        self.queue = Queue(0)
+    
     def get(self):
+        print("StreamingQueue.get() " + repr(self.queue.empty()))
         return self.queue.get()
+
+    def close(self):
+        self.buffer.close()
 
 class Camera:
     capturing = False
@@ -181,6 +189,5 @@ class Camera:
 
     def close(self):
         if hasattr(self, "camera"):
-            self.camera.stop_recording()
             self.camera.close()
         self.stream.close()
