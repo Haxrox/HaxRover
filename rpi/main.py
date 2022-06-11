@@ -19,11 +19,13 @@ from Camera import Camera
 
 mainloop = None
 application = None
+camera = None
 
 def sigint_handler(sig, frame):
     if (sig == signal.SIGINT):
         print("")
         if (mainloop.is_running()):
+            camera.stop()
             mainloop.quit()
         else:
             sys.exit("SIGINT Signal Emitted")
@@ -120,6 +122,7 @@ def main():
     global mainloop
     mainloop = GLib.MainLoop()
 
+    global camera
     rover = Rover()
     camera = Camera()
 

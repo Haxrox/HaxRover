@@ -145,7 +145,7 @@ class StreamingQueue(object):
         self.queue = Queue(0)
     
     def get(self):
-        print("StreamingQueue.get() " + repr(self.queue.empty()) + " | " + repr(len(self.queue)))
+        print("StreamingQueue.get() " + repr(self.queue.empty()))
         return self.queue.get()
 
     def close(self):
