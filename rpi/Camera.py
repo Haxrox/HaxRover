@@ -120,23 +120,7 @@ class StreamingQueue(object):
             # clients it's available
             self.buffer.truncate()
             buffer = self.buffer.getvalue()
-
-            print("Length: " + str(len(buffer)))
-
-            parsedBytes = 0
-
-            while (parsedBytes < len(buffer)):
-                # print("ParsedBytes: " + str(parsedBytes))
-                
-                frame = []
-                frame.append(dbus.Byte(1 if (len(buffer) - parsedBytes) > FRAME_SIZE else 0))
-                
-                for offset in range(0, min(FRAME_SIZE, len(buffer) - parsedBytes)):
-                    frame.append(dbus.Byte(buffer[parsedBytes + offset]))
-                    
-                parsedBytes += min(FRAME_SIZE, len(buffer) - parsedBytes)
-                self.queue.put(frame)
-
+            self.queue.put(buffer)
             self.buffer.seek(0)
         return self.buffer.write(data)
 
@@ -153,10 +137,10 @@ class StreamingQueue(object):
 
 class Camera:
     capturing = False
+    queue = Queue(0)
     stream = StreamingQueue()
 
     def __init__(self):
-
         try:
             # initialize the camera and grab a reference to the raw camera capture
             self.camera = PiCamera()
@@ -174,8 +158,27 @@ class Camera:
             self.counter = self.counter + 1
             return [dbus.Byte(byte) for byte in bytearray(str(self.counter), "utf-8")]
         else:
-            return self.stream.get()
+            return self.queue.get()
 
+    def run(self):
+        while self.capturing:
+            buffer = self.stream.get()
+            print("Length: " + str(len(buffer)))
+
+            parsedBytes = 0
+
+            while (parsedBytes < len(buffer)):
+                # print("ParsedBytes: " + str(parsedBytes))
+                
+                frame = []
+                frame.append(dbus.Byte(1 if (len(buffer) - parsedBytes) > FRAME_SIZE else 0))
+                
+                for offset in range(0, min(FRAME_SIZE, len(buffer) - parsedBytes)):
+                    frame.append(dbus.Byte(buffer[parsedBytes + offset]))
+                    
+                parsedBytes += min(FRAME_SIZE, len(buffer) - parsedBytes)
+                self.queue.put(frame)
+                
     def start(self):
         self.capturing = True
 
