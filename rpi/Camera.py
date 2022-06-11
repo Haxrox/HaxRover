@@ -161,24 +161,25 @@ class Camera:
             return self.queue.get()
 
     def run(self):
-        while self.capturing:
-            buffer = self.stream.get()
-            print("Length: " + str(len(buffer)))
+        while True:
+            if self.capturing:
+                buffer = self.stream.get()
+                print("Length: " + str(len(buffer)))
 
-            parsedBytes = 0
+                parsedBytes = 0
 
-            while (parsedBytes < len(buffer)):
-                # print("ParsedBytes: " + str(parsedBytes))
-                
-                frame = []
-                frame.append(dbus.Byte(1 if (len(buffer) - parsedBytes) > FRAME_SIZE else 0))
-                
-                for offset in range(0, min(FRAME_SIZE, len(buffer) - parsedBytes)):
-                    frame.append(dbus.Byte(buffer[parsedBytes + offset]))
+                while (parsedBytes < len(buffer)):
+                    # print("ParsedBytes: " + str(parsedBytes))
                     
-                parsedBytes += min(FRAME_SIZE, len(buffer) - parsedBytes)
-                self.queue.put(frame)
-                
+                    frame = []
+                    frame.append(dbus.Byte(1 if (len(buffer) - parsedBytes) > FRAME_SIZE else 0))
+                    
+                    for offset in range(0, min(FRAME_SIZE, len(buffer) - parsedBytes)):
+                        frame.append(dbus.Byte(buffer[parsedBytes + offset]))
+                        
+                    parsedBytes += min(FRAME_SIZE, len(buffer) - parsedBytes)
+                    self.queue.put(frame)
+
     def start(self):
         self.capturing = True
 
