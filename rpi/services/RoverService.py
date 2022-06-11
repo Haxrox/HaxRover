@@ -84,6 +84,7 @@ class RoverCharacteristic(Characteristic):
 
         self.notifying = True
         
+        self.camera.start()
         self.notify()
 
     def StopNotify(self):
