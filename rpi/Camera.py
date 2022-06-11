@@ -114,6 +114,7 @@ class StreamingQueue(object):
         self.queue = Queue(0)
 
     def write(self, data):
+        print("Write")
         if data.startswith(b'\xff\xd8'):
             # New frame, copy the existing buffer's content and notify all
             # clients it's available
@@ -125,7 +126,7 @@ class StreamingQueue(object):
             parsedBytes = 0
 
             while (parsedBytes < len(buffer)):
-                print("ParsedBytes: " + str(parsedBytes))
+                # print("ParsedBytes: " + str(parsedBytes))
                 
                 frame = []
                 frame.append(dbus.Byte(1 if (len(buffer) - parsedBytes) > FRAME_SIZE else 0))
@@ -144,7 +145,7 @@ class StreamingQueue(object):
         self.queue = Queue(0)
     
     def get(self):
-        print("StreamingQueue.get() " + repr(self.queue.empty()))
+        print("StreamingQueue.get() " + repr(self.queue.empty()) + " | " + repr(len(self.queue)))
         return self.queue.get()
 
     def close(self):
