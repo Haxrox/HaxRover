@@ -72,7 +72,7 @@ class RoverCharacteristic(Characteristic):
                 GLib.timeout_add(0, self.notify)
             except Exception as e: 
                 print("Failed to notify: " + repr(e))
-                GLib.timeout_add(0, self.notify)
+                GLib.timeout_add(5000, self.notify)
         else:
             pass
 

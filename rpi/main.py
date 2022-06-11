@@ -124,8 +124,13 @@ def main():
     camera = Camera()
 
     roverThread = Thread(target=rover.run)
-    roverThread.daemon = True    
+    roverThread.daemon = True
+
+    # cameraThread = Thread(target=camera.run)
+    # cameraThread.daemon = True
+    
     roverThread.start()
+    # cameraThread.start()
 
     global application
     advertisement_manager, advertisements = init_advertising(bus)

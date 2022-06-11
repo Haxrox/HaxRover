@@ -173,7 +173,7 @@ class Camera:
             self.counter = self.counter + 1
             return [dbus.Byte(byte) for byte in bytearray(str(self.counter), "utf-8")]
         else:
-            self.stream.get()
+            return self.stream.get()
 
     def start(self):
         self.capturing = True
