@@ -17,7 +17,7 @@ FRAMERATE = 24
 HEIGHT = 640
 WIDTH = 480
 
-class Camera:
+class CameraV1:
     capturing = False
     queue = Queue(0)
 
@@ -106,3 +106,81 @@ class Camera:
     def close(self):
         if hasattr(self, "camera"):
             self.camera.close()
+
+class StreamingQueue(object):
+    def __init__(self):
+        self.frame = None
+        self.buffer = io.BytesIO()
+        self.queue = Queue(0)
+
+    def write(self, data):
+        if data.startswith(b'\xff\xd8'):
+            # New frame, copy the existing buffer's content and notify all
+            # clients it's available
+            self.buffer.truncate()
+            buffer = self.buffer.getvalue()
+
+            print("Length: " + str(len(buffer)))
+
+            parsedBytes = 0
+
+            while (parsedBytes < len(buffer)):
+                print("ParsedBytes: " + str(parsedBytes))
+                
+                frame = []
+                frame.append(dbus.Byte(1 if (len(buffer) - parsedBytes) > FRAME_SIZE else 0))
+                
+                for offset in range(0, min(FRAME_SIZE, len(buffer) - parsedBytes)):
+                    frame.append(dbus.Byte(buffer[parsedBytes + offset]))
+                    
+                parsedBytes += min(FRAME_SIZE, len(buffer) - parsedBytes)
+                self.queue.put(frame)
+
+            self.buffer.seek(0)
+        return self.buffer.write(data)
+
+    def get(self):
+        return self.queue.get()
+
+class Camera:
+    capturing = False
+    stream = StreamingQueue()
+
+    def __init__(self):
+
+        try:
+            # initialize the camera and grab a reference to the raw camera capture
+            self.camera = PiCamera()
+            self.camera.resolution = (HEIGHT, WIDTH)
+            self.camera.framerate = FRAMERATE
+        except:
+            print("Cannot create PiCamera")
+            self.counter = 0
+
+        # allow the camera to warmup
+        time.sleep(0.1)
+
+    def get(self):
+        if (not hasattr(self, "camera")):
+            self.counter = self.counter + 1
+            return [dbus.Byte(byte) for byte in bytearray(str(self.counter), "utf-8")]
+        else:
+            self.stream.get()
+
+    def start(self):
+        self.capturing = True
+
+        if hasattr(self, "camera"):
+            self.camera.start_recording(self.stream, format='mjpeg')
+
+    def stop(self):
+        self.capturing = False
+        if hasattr(self, "camera"):
+            self.camera.stop_recording()
+        self.stream.flush()
+
+    def close(self):
+        if hasattr(self, "camera"):
+            self.camera.stop_recording()
+            self.camera.close()
+        self.stream.close()
