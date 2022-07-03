@@ -9,6 +9,8 @@
 
 [BlueZ](https://github.com/bluez/bluez)
 
+[dbus-python](https://dbus.freedesktop.org/doc/dbus-python/index.html)
+
 [gpiozero](https://github.com/gpiozero/gpiozero)
 
 [PiCamera](https://picamera.readthedocs.io/en/release-1.13/index.html)
