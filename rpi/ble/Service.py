@@ -35,8 +35,8 @@ class Service(dbus.service.Object):
 
     def get_characteristic_paths(self):
         result = []
-        for chrc in self.characteristics:
-            result.append(chrc.get_path())
+        for characteristic in self.characteristics:
+            result.append(characteristic.get_path())
         return result
 
     def get_characteristics(self):

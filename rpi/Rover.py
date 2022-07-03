@@ -56,7 +56,7 @@ class Rover:
                 elif (self.state == State.STOP):
                     self.robot.stop()
         except:
-            print("Run error")
+            print("Rover Run error")
     
     def rotate_left(self, angle, distance):     
         # changes robot state
@@ -100,3 +100,6 @@ class Rover:
         self.state = State.STOP
         # stops robot
         self.target = time.time_ns() + INFINITE_CONSTANT
+
+    def close(self):
+        self.go_stop()

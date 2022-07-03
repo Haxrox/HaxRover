@@ -13,13 +13,13 @@ class Descriptor(dbus.service.Object):
         self.bus = bus
         self.uuid = uuid
         self.flags = flags
-        self.chrc = characteristic
+        self.characteristic = characteristic
         dbus.service.Object.__init__(self, bus, self.path)
 
     def get_properties(self):
         return {
                 GATT_DESC_IFACE: {
-                        'Characteristic': self.chrc.get_path(),
+                        'Characteristic': self.characteristic.get_path(),
                         'UUID': self.uuid,
                         'Flags': self.flags,
                 }

@@ -1,28 +1,21 @@
 import dbus
 import dbus.service
 from gi.repository import GLib
-from threading import Thread
 
 from ble.Constants import *
 from ble.Exceptions import *
 
 from services.RoverService import RoverService
 
-from Rover import Rover
-
 class RoverApplication(dbus.service.Object):
     """
     org.bluez.GattApplication1 interface implementation
     """
-    def __init__(self, bus):
+    def __init__(self, bus, rover, camera):
         self.path = '/haxrover'
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
-        
-        rover = Rover()
-        Thread(target=rover.run).start()
-
-        self.add_service(RoverService(bus, 0, rover))
+        self.add_service(RoverService(bus, 0, rover, camera))
 
     def get_path(self):
         return dbus.ObjectPath(self.path)
