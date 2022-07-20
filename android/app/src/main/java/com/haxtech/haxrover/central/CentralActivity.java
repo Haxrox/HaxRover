@@ -42,6 +42,7 @@ public class CentralActivity extends AppCompatActivity {
     private EditText dataField;
 
     private Button btnRead;
+    private Button btnNotify;
 
 
     @Override
@@ -110,6 +111,7 @@ public class CentralActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btnSend);
 
         btnRead = findViewById(R.id.btnRead);
+        btnNotify = findViewById(R.id.btnNotify);
 
         dataField = findViewById(R.id.dataField);
 
@@ -143,11 +145,10 @@ public class CentralActivity extends AppCompatActivity {
             }
         });
 
-        btnRead.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CentralManager.getInstance(CentralActivity.this).readData();
-            }
+        btnRead.setOnClickListener(view -> CentralManager.getInstance(CentralActivity.this).readData());
+
+        btnNotify.setOnClickListener((view) -> {
+            CentralManager.getInstance(CentralActivity.this).toggleNotification();
         });
     }
 

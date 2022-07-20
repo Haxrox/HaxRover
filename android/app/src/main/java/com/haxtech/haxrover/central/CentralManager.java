@@ -46,6 +46,8 @@ public class CentralManager {
     private boolean isScanning = false;
     // flag for connection
     private boolean isConnected = false;
+    // flag for notifications
+    private boolean notifying = false;
     // scan results
     private Map<String, BluetoothDevice> scanResults;
     // scan callback
@@ -190,6 +192,7 @@ public class CentralManager {
         // update the status
         listener.onStatusMsg("Connecting to " + _device.getAddress());
         GattClientCallback gatt_client_cb = new GattClientCallback();
+        notifying = false;
         bleGatt = _device.connectGatt(mContext, false, gatt_client_cb, BluetoothDevice.TRANSPORT_LE);
     }
 
@@ -258,6 +261,31 @@ public class CentralManager {
             Log.e(TAG, "Failed to read command : " + cmd_characteristic.getUuid());
             listener.onStatusMsg("Failed to write command");
             disconnectGattServer();
+        }
+    }
+
+    /**
+     * Toggles characteristic notification
+     */
+    public void toggleNotification() {
+        if (bleGatt != null) {
+            notifying = !notifying;
+            BluetoothGattCharacteristic cmd_characteristic = BluetoothUtils.findCharacteristic(bleGatt, CHARACTERISTIC_UUID);
+            boolean setSuccess = bleGatt.setCharacteristicNotification(cmd_characteristic, notifying);
+
+            listener.onStatusMsg("Notifications: " + (setSuccess ? (notifying ? "On" : "Off") : "Failed"));
+
+            cmd_characteristic.getDescriptors().forEach(descriptor -> {
+                descriptor.setValue(notifying ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                boolean success = bleGatt.writeDescriptor(descriptor);
+                if (success) {
+                    listener.onStatusMsg("Notifications toggled on server");
+                    Log.e(TAG, "WriteDescriptor success");
+                } else {
+                    listener.onStatusMsg("Failed to toggle notifications on server");
+                    Log.e(TAG, "WriteDescriptor fail");
+                }
+            });
         }
     }
 
@@ -362,22 +390,7 @@ public class CentralManager {
             // log for successful discovery
             Log.d(TAG, "Services discovery is successful");
 
-//             Set CharacteristicNotification
-            BluetoothGattCharacteristic cmd_characteristic = BluetoothUtils.findCharacteristic(bleGatt, CHARACTERISTIC_UUID);
-            boolean setSuccess = _gatt.setCharacteristicNotification(cmd_characteristic, true);
-
-            Log.i(TAG, "SetCharacteristicNotification: " + setSuccess);
-//             리시버 설정
-            cmd_characteristic.getDescriptors().forEach(descriptor -> {
-                System.out.println(descriptor.getUuid());
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                boolean success = _gatt.writeDescriptor(descriptor);
-                if (success) {
-                    Log.e(TAG, "writeCharacteristic success");
-                } else {
-                    Log.e(TAG, "writeCharacteristic fail");
-                }
-            });
+            toggleNotification();
 
 //            BluetoothGattDescriptor descriptor = cmd_characteristic.getDescriptor(UUID.fromString(CONFIG_UUID));
 //            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);

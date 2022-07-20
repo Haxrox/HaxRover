@@ -18,6 +18,10 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,17 +31,22 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.haxtech.haxrover.haxrover.BluetoothUtils;
+import com.haxtech.haxrover.central.BluetoothUtils;
+import com.haxtech.haxrover.central.CentralActivity;
 import com.haxtech.haxrover.haxrover.RoverActivity;
+import com.haxtech.haxrover.peripheral.PeripheralActivity;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,10 +57,15 @@ public class RoverMainActivity extends AppCompatActivity {
     private TextView statusField;
     private ProgressBar progressSpinner;
     private Button haxRoverButton;
+    private Button centralButton;
+    private Button peripheralButton;
+
     // text view for logs
+    private ImageView imageView;
     private TextView logView;
     // button for reading data
     private Button readButton;
+    private Button notifyButton;
 
     private ImageButton upButton;
     private ImageButton downButton;
@@ -66,18 +80,41 @@ public class RoverMainActivity extends AppCompatActivity {
     private List<ScanFilter> mScanFilters;
     private ScanSettings mScanSettings;
     private BluetoothGattCharacteristic mGattCharacteristic;
+    private boolean autoScan = true;
     private boolean isScanning = false;
+    private boolean notifying = false;
+
+    List<Byte> imageBytes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initBleScanner();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
+
         initScannerView();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop");
+        autoScan = false;
+        stopScan();
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+
+        stopScan();
+        disconnectGatt();
     }
 
     /**
@@ -102,18 +139,27 @@ public class RoverMainActivity extends AppCompatActivity {
      * Initializes the activity view and starts LE scanning
      */
     private void initScannerView() {
-        initBleScanner();
-
         setContentView(R.layout.activity_rover_main);
         statusField = findViewById(R.id.statusView);
         progressSpinner = findViewById(R.id.progressSpinner);
         haxRoverButton = findViewById(R.id.haxRoverButton);
+        centralButton = findViewById(R.id.centralButton);
+        peripheralButton = findViewById(R.id.peripheralButton);
 
         haxRoverButton.setOnClickListener(view -> {
-            stopScan();
             startActivity(new Intent(RoverMainActivity.this, RoverActivity.class));
         });
 
+        centralButton.setOnClickListener(view -> {
+            startActivity(new Intent(RoverMainActivity.this, CentralActivity.class));
+        });
+
+        peripheralButton.setOnClickListener(view -> {
+            startActivity(new Intent(RoverMainActivity.this, PeripheralActivity.class));
+        });
+
+        notifying = false;
+        autoScan = true;
         startScan();
     }
 
@@ -126,13 +172,16 @@ public class RoverMainActivity extends AppCompatActivity {
 
         scrollview = ((ScrollView) findViewById(R.id.scrollview));
         logView = findViewById(R.id.logField);
+        imageView = findViewById(R.id.imageView);
         readButton = findViewById(R.id.readButton);
+        notifyButton = findViewById(R.id.notifyButton);
         upButton = findViewById(R.id.upButton);
         downButton = findViewById(R.id.downButton);
         leftButton = findViewById(R.id.leftButton);
         rightButton = findViewById(R.id.rightButton);
 
         readButton.setOnClickListener(view -> readData());
+        notifyButton.setOnClickListener(view -> toggleNotification());
 
         upButton.setOnTouchListener((v, event) -> {
             if(event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -203,14 +252,21 @@ public class RoverMainActivity extends AppCompatActivity {
      * @param message message to write
      */
     private void writeLog(final String message) {
+        Log.i(TAG, message);
+
         Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                String oldMsg = logView.getText().toString();
-                logView.setText(oldMsg + "\n" + message);
 
-                scrollview.post(() -> scrollview.fullScroll(ScrollView.FOCUS_DOWN));
+                if (logView != null) {
+                    String oldMsg = logView.getText().toString();
+                    logView.setText(oldMsg + "\n" + message);
+                }
+
+                if (scrollview != null) {
+                    scrollview.post(() -> scrollview.fullScroll(ScrollView.FOCUS_DOWN));
+                }
             }
         };
         handler.sendEmptyMessage(1);
@@ -220,34 +276,42 @@ public class RoverMainActivity extends AppCompatActivity {
      * Starts LE Scanning
      */
     private void startScan() {
-        if (mBleGatt != null) {
-            mBleGatt.disconnect();
-            mBleGatt.close();
+        if (autoScan) {
+            if (mBleGatt != null) {
+                mBleGatt.disconnect();
+                mBleGatt.close();
 
-            try {
-                // BluetoothGatt gatt
-                statusField.setText("Clearing device cache");
-                Log.i(TAG, "Clearing device cache");
-                final Method refresh = mBleGatt.getClass().getMethod("refresh");
-                if (refresh != null) {
-                    refresh.invoke(mBleGatt);
+                try {
+                    // BluetoothGatt gatt
+                    statusField.setText("Clearing device cache");
+                    Log.i(TAG, "Clearing device cache");
+                    final Method refresh = mBleGatt.getClass().getMethod("refresh");
+                    if (refresh != null) {
+                        refresh.invoke(mBleGatt);
+                    }
+                } catch (Exception e) {
+                    // Log it
                 }
-            } catch (Exception e) {
-                // Log it
             }
+
+            stopScan();
+
+            isScanning = true;
+            statusField.setText("Scanning for rover ...");
+            mBleScanner.startScan(mScanFilters, mScanSettings, leScanCallback);
         }
-
-        stopScan();
-
-        isScanning = true;
-        statusField.setText("Scanning for rover ...");
-        mBleScanner.startScan(mScanFilters, mScanSettings, leScanCallback);
     }
 
     public void stopScan() {
         if (isScanning) {
             isScanning = false;
             mBleScanner.stopScan(leScanCallback);
+        }
+    }
+
+    public void disconnectGatt() {
+        if (mBleGatt != null) {
+            mBleGatt.disconnect();
         }
     }
 
@@ -306,6 +370,31 @@ public class RoverMainActivity extends AppCompatActivity {
     }
 
     /**
+     * Toggles characteristic notification
+     */
+    public void toggleNotification() {
+        if (mBleGatt != null && mGattCharacteristic != null) {
+            notifying = !notifying;
+            boolean setSuccess = mBleGatt.setCharacteristicNotification(mGattCharacteristic, notifying);
+
+            writeLog("Notifications: " + (setSuccess ? (notifying ? "On" : "Off") : "Failed"));
+
+            mGattCharacteristic.getDescriptors().forEach(descriptor -> {
+                Log.i(TAG, "Descriptor Permissions: " + descriptor.getPermissions());
+//                if ((descriptor.getPermissions() & BluetoothGattDescriptor.PERMISSION_WRITE) == BluetoothGattDescriptor.PERMISSION_WRITE) {
+                    descriptor.setValue(notifying ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    boolean success = mBleGatt.writeDescriptor(descriptor);
+                    if (success) {
+                        writeLog("Notifications toggled on server");
+                    } else {
+                        writeLog("Failed to toggle notifications on server");
+                    }
+//                }
+            });
+        }
+    }
+
+    /**
      * Callback for LE Scan
      */
     ScanCallback leScanCallback = new ScanCallback() {
@@ -347,7 +436,7 @@ public class RoverMainActivity extends AppCompatActivity {
                     gatt.discoverServices();
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     // disconnected from the GATT Server
-                    connectError("Connection Failed. ");
+                    connectError("Connection Disconnected. ");
                 }
             }
         }
@@ -381,24 +470,19 @@ public class RoverMainActivity extends AppCompatActivity {
             // log for successful discovery
             Log.d(TAG, "Services discovery is successful. Setting notification...");
 
-            gatt.setCharacteristicNotification(characteristic, true);
-            characteristic.getDescriptors().forEach(descriptor -> {
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                boolean success = gatt.writeDescriptor(descriptor);
-                if (success) {
-                    setStatus("Services discovered!");
-                    Log.i(TAG, "writeCharacteristic success");
+            setStatus("Services discovered! Requesting MTU of size: 517");
 
-                    progressSpinner.setIndeterminate(false);
-                    progressSpinner.setProgress(100);
+            mGattCharacteristic = characteristic;
+            notifying = false;
 
-                    mGattCharacteristic = characteristic;
-                    // successfully connected to the GATT Server
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> initControlView(), 2500);
-                } else {
-                    Log.i(TAG, "writeCharacteristic fail");
-                }
-            });
+            toggleNotification();
+
+            gatt.requestMtu(517);
+
+            // successfully connected to the GATT Server
+            progressSpinner.setIndeterminate(false);
+            progressSpinner.setProgress(100);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> initControlView(), 2500);
         }
 
         @Override
@@ -415,8 +499,9 @@ public class RoverMainActivity extends AppCompatActivity {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Characteristic written successfully");
             } else {
-                writeLog("Characteristic write unsuccessful, status: " + status + " Disconnecting + rescanning");
-                new Handler(Looper.getMainLooper()).postDelayed(() -> initScannerView(), 1000);
+                writeLog("Characteristic write unsuccessful, status: " + status);
+//                writeLog("Characteristic write unsuccessful, status: " + status + ". Disconnecting + rescanning");
+//                new Handler(Looper.getMainLooper()).postDelayed(() -> initScannerView(), 1000);
             }
         }
 
@@ -431,15 +516,58 @@ public class RoverMainActivity extends AppCompatActivity {
             }
         }
 
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+            super.onMtuChanged(gatt, mtu, status);
+
+            writeLog("MTU Negotiation completed. MTU: " + mtu);
+        }
+
         /**
          * Log the value of the characteristic
          * @param characteristic
          */
         private void readCharacteristic(BluetoothGattCharacteristic characteristic) {
             byte[] msg = characteristic.getValue();
-            String message = new String(msg);
+            byte moreData = msg[0];
+            String message = "Length: " + (msg.length - 1) + " | More Data: " + moreData;
             Log.d(TAG, "Read: " + message);
-            writeLog("Read: " + message);
+//            writeLog("Read: " + message);
+
+            for (int index = 1; index < msg.length; index++) {
+                imageBytes.add(msg[index]);
+            }
+
+            if (moreData == 0) {
+                byte[] data = new byte[imageBytes.size()];
+
+                for (int index = 0; index < imageBytes.size(); index++) {
+                    data[index] = imageBytes.get(index);
+                }
+
+                imageBytes.clear();
+
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    Bitmap bitmap;
+
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            ImageDecoder.Source source = ImageDecoder.createSource(data);
+                            bitmap = ImageDecoder.decodeBitmap(source);
+                        } else {
+                            bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        }
+
+                        if (bitmap != null && imageView != null) {
+                            imageView.setImageBitmap(bitmap);
+                            writeLog("Image set | Size: " + data.length);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        writeLog("Failed to convert bitmap");
+                    }
+                });
+            }
         }
     };
 }

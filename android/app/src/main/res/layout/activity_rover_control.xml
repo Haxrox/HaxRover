@@ -48,13 +48,28 @@
             android:layout_weight="0.2"
             android:minHeight="48dp">
 
-            <Button
-                android:id="@+id/readButton"
-                style="@style/Widget.AppCompat.Button"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Read" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/readButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="4dp"
+                    android:layout_weight="1"
+                    android:text="Read" />
+
+                <Button
+                    android:id="@+id/notifyButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="4dp"
+                    android:layout_weight="1"
+                    android:text="Toggle Notify" />
+            </LinearLayout>
 
         </TableRow>
 
@@ -72,7 +87,6 @@
 
                 <ImageButton
                     android:id="@+id/upButton"
-                    style="@android:style/Widget.Material.ImageButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="#1976d2"
@@ -103,7 +117,6 @@
 
                 <ImageButton
                     android:id="@+id/leftButton"
-                    style="@android:style/Widget.Material.ImageButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="#1976d2"
@@ -118,7 +131,6 @@
 
                 <ImageButton
                     android:id="@+id/rightButton"
-                    style="@android:style/Widget.Material.ImageButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="#1976d2"
@@ -148,7 +160,6 @@
 
                 <ImageButton
                     android:id="@+id/downButton"
-                    style="@android:style/Widget.Material.ImageButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="#1976d2"

@@ -18,6 +18,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -51,35 +55,21 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
 //        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+        initImmersiveMode();
         setContentView(R.layout.activity_splash);
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            ArrayList<String> permissionsList = new ArrayList<>();
-            permissionsList.addAll(Arrays.asList(permissions));
-            permissionsList.add(Manifest.permission.BLUETOOTH_SCAN);
-            permissionsList.add(Manifest.permission.BLUETOOTH_CONNECT);
-            permissions = permissionsList.toArray(permissions);
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
+        initSplash();
+    }
 
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            boolean permissionsGranted = checkPermission();
-
-            new Handler().postDelayed((Runnable) () -> {
-                if (permissionsGranted) {
-                    enableBluetooth();
-                } else {
-                    Log.i(TAG, "Requesting permissions");
-                    requestPermissions(permissions, REQUEST_PERMISSIONS_CODE);
-                }
-            }, 1000);
-        } else {
-            Toast.makeText(this, "Your device does not support BLE. Exiting ...", Toast.LENGTH_LONG).show();
-            finish();
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initSplash();
     }
 
     @Override
@@ -136,6 +126,46 @@ public class SplashActivity extends AppCompatActivity {
             altDlgBuilder.setNegativeButton("No", (dialogInterface, i) -> finish());
             AlertDialog altDlg = altDlgBuilder.create();
             altDlg.show();
+        }
+    }
+
+    private void initImmersiveMode() {
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        WindowInsetsControllerCompat windowInsetsController =
+                ViewCompat.getWindowInsetsController(getWindow().getDecorView());
+        if (windowInsetsController == null) {
+            return;
+        }
+// Hide the system bars.
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+
+// Hide the status bars
+        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars());
+    }
+
+    private void initSplash() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ArrayList<String> permissionsList = new ArrayList<>();
+            permissionsList.addAll(Arrays.asList(permissions));
+            permissionsList.add(Manifest.permission.BLUETOOTH_SCAN);
+            permissionsList.add(Manifest.permission.BLUETOOTH_CONNECT);
+            permissions = permissionsList.toArray(permissions);
+        }
+
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            boolean permissionsGranted = checkPermission();
+
+            new Handler().postDelayed((Runnable) () -> {
+                if (permissionsGranted) {
+                    enableBluetooth();
+                } else {
+                    Log.i(TAG, "Requesting permissions");
+                    requestPermissions(permissions, REQUEST_PERMISSIONS_CODE);
+                }
+            }, 1000);
+        } else {
+            Toast.makeText(this, "Your device does not support BLE. Exiting ...", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
