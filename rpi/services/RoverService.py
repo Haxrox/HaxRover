@@ -8,53 +8,49 @@ from ble.Descriptor import Descriptor
 from ble.Constants import *
 
 class RoverService(Service):
-    def __init__(self, bus, index, rover, camera):
+    def __init__(self, bus, index):
         Service.__init__(self, bus, index, ROVER_SERVICE_UUID, True)
-        self.add_characteristic(RoverCharacteristic(bus, 0, self, rover, camera))
+        self.add_characteristic(RoverCharacteristic(bus, 0, self))
 
 class RoverCharacteristic(Characteristic):
-    def __init__(self, bus, index, service, rover, camera):
+    def __init__(self, bus, index, service):
         Characteristic.__init__(self, bus, index, ROVER_CHARACTERISTIC_UUID, ['read', 'write', 'notify'], service)
         self.add_descriptor(RoverDescriptor(bus, 0, self))
-        self.bus = bus
-        self.notifying = False
         self.value = []
-        self.rover = rover
-        self.camera = camera
     
-    def ReadValue(self, options):
-        print('RoverCharacteristic Read: ' + repr(self.value))
-        print("RoverCharacteristic Read Options: " + repr(options))
-        print("RoverCharacteristic Read Device: " + repr(options['device']))
+    # def ReadValue(self, options):
+    #     print('RoverCharacteristic Read: ' + repr(self.value))
+    #     print("RoverCharacteristic Read Options: " + repr(options))
+    #     print("RoverCharacteristic Read Device: " + repr(options['device']))
         
-        # if self.notifying:
-        #     print("Notify characteristic changed")
-            # try:
-            #     object = self.bus.get_object(BLUEZ_SERVICE_NAME, options['device'] + "/")
-            #     print("Object: " + repr(object))
-            #     # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': self.value})
-            #     # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': dbus.Array("Test", 's')})
-            #     # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': [dbus.Byte(84), dbus.Byte(101), dbus.Byte(115), dbus.Byte(116)]}, [])
-            #     object.PropertiesChanged(GATT_CHRC_IFACE, {'Value': dbus.Array([dbus.Byte(84), dbus.Byte(101), dbus.Byte(115), dbus.Byte(116)], "y")}, dbus.Array([], "y"))
+    #     if self.notifying:
+    #         print("Notify characteristic changed")
+    #         try:
+    #             object = self.bus.get_object(BLUEZ_SERVICE_NAME, options['device'] + "/")
+    #             print("Object: " + repr(object))
+    #             # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': self.value})
+    #             # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': dbus.Array("Test", 's')})
+    #             # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': [dbus.Byte(84), dbus.Byte(101), dbus.Byte(115), dbus.Byte(116)]}, [])
+    #             object.PropertiesChanged(GATT_CHRC_IFACE, {'Value': dbus.Array([dbus.Byte(84), dbus.Byte(101), dbus.Byte(115), dbus.Byte(116)], "y")}, dbus.Array([], "y"))
 
-            # except:
-            #     print("failed to notify characteristic changed")
+    #         except:
+    #             print("failed to notify characteristic changed")
 
-        return self.value
+    #     return self.value
 
-    def WriteValue(self, value, options):
-        print('RoverCharacteristic Write: ' + repr(value))
-        print("RoverCharacteristic Write Options: " + repr(options))
-        print("RoverCharacteristic Write Device: " + repr(options['device']))
+    # def WriteValue(self, value, options):
+    #     print('RoverCharacteristic Write: ' + repr(value))
+    #     print("RoverCharacteristic Write Options: " + repr(options))
+    #     print("RoverCharacteristic Write Device: " + repr(options['device']))
  
-        direction = 'go_' + (''.join([str(v).lower() for v in value]))
-        print("value: %s" % direction)
+    #     direction = 'go_' + (''.join([str(v).lower() for v in value]))
+    #     print("value: %s" % direction)
 
-        try:
-            self.value = value
-            getattr(self.rover, direction)()
-        except:
-            print("Invalid command: " + direction)
+    #     try:
+    #         self.value = value
+    #         # getattr(self.rover, direction)()
+    #     except:
+    #         print("Invalid command: " + direction)
 
         # try:
         #     # self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': self.value}, []) # WORKS given self.value is correct
@@ -63,40 +59,40 @@ class RoverCharacteristic(Characteristic):
         # except:
         #     print("failed to notify characteristic changed")
 
-    def notify(self):
-        if self.notifying:
-            try:
-                pdu = self.camera.get()
-                print("Notify: " + repr(len(pdu)))
-                self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': pdu}, [])
-                GLib.timeout_add(0, self.notify)
-            except Exception as e: 
-                print("Failed to notify: " + repr(e))
-                GLib.timeout_add(5000, self.notify)
-        else:
-            pass
+    # def notify(self):
+    #     if self.notifying:
+    #         try:
+    #             pdu = self.camera.get()
+    #             print("Notify: " + repr(len(pdu)))
+    #             self.PropertiesChanged(GATT_CHRC_IFACE, {'Value': pdu}, [])
+    #             GLib.timeout_add(0, self.notify)
+    #         except Exception as e: 
+    #             print("Failed to notify: " + repr(e))
+    #             GLib.timeout_add(5000, self.notify)
+    #     else:
+    #         pass
 
-    def StartNotify(self):
-        print("StartNotify")
+    # def StartNotify(self):
+    #     print("StartNotify")
         
-        if self.notifying:
-            print('Already notifying, nothing to do')
-            return
+    #     if self.notifying:
+    #         print('Already notifying, nothing to do')
+    #         return
 
-        self.notifying = True
+    #     self.notifying = True
         
-        self.camera.start()
-        self.notify()
+    #     self.camera.start()
+    #     self.notify()
 
-    def StopNotify(self):
-        print("StopNotify")
+    # def StopNotify(self):
+    #     print("StopNotify")
 
-        if not self.notifying:
-            print('Not notifying, nothing to do')
-            return
+    #     if not self.notifying:
+    #         print('Not notifying, nothing to do')
+    #         return
 
-        self.notifying = False
-        self.camera.stop()
+    #     self.notifying = False
+    #     self.camera.stop()
 
 class RoverDescriptor(Descriptor):
     def __init__(self, bus, index, characteristic):

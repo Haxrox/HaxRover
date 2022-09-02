@@ -18,14 +18,12 @@ from Rover import Rover
 from Camera import Camera
 
 mainloop = None
-application = None
-camera = None
+rover_application = None
 
 def sigint_handler(sig, frame):
     if (sig == signal.SIGINT):
         print("")
         if (mainloop.is_running()):
-            camera.stop()
             mainloop.quit()
         else:
             sys.exit("SIGINT Signal Emitted")
@@ -120,9 +118,9 @@ def main():
     bus = dbus.SystemBus()
     
     global mainloop
+    global rover_application
     mainloop = GLib.MainLoop()
 
-    global camera
     rover = Rover()
     camera = Camera()
 
@@ -135,9 +133,8 @@ def main():
     roverThread.start()
     cameraThread.start()
 
-    global application
     advertisement_manager, advertisements = init_advertising(bus)
-    gatt_manager, application = init_gatt_server(bus, rover, camera)
+    gatt_manager, rover_application = init_gatt_server(bus, rover, camera)
     init_object_manager(bus)
 
     signal.signal(signal.SIGINT, sigint_handler)
@@ -145,10 +142,9 @@ def main():
     mainloop.run()
 
     deinit_advertising(advertisement_manager, advertisements)
-    deinit_gatt_server(gatt_manager, application)
+    deinit_gatt_server(gatt_manager, rover_application)
     
-    rover.close()
-    camera.close()
+    rover_application.close()
 
 if __name__ == '__main__':
     main()

@@ -14,7 +14,9 @@ class Characteristic(dbus.service.Object):
         self.uuid = uuid
         self.service = service
         self.flags = flags
+        self.notifying = False
         self.descriptors = []
+        self.callbacks = {}
         dbus.service.Object.__init__(self, bus, self.path)
 
     def get_properties(self):
@@ -44,6 +46,30 @@ class Characteristic(dbus.service.Object):
     def get_descriptors(self):
         return self.descriptors
 
+    def find_descriptor(self, uuid):
+        for descriptor in self.descriptors:
+            if descriptor.get_uuid() == uuid:
+                return descriptor
+        return None
+
+    def get_uuid(self):
+        return self.uuid
+
+    def on(self, event, callback):
+        self.callbacks[event] = callback
+    
+    def on_read(self, callback):
+        self.callbacks["read"] = callback
+
+    def on_write(self, callback):
+        self.callbacks["write"] = callback
+
+    def on_start_notify(self, callback):
+        self.callbacks["startNotify"] = callback
+    
+    def on_stop_notify(self, callback):
+        self.callbacks["stopNotify"] = callback
+
     @dbus.service.method(DBUS_PROP_IFACE,
                          in_signature='s',
                          out_signature='a{sv}')
@@ -57,13 +83,19 @@ class Characteristic(dbus.service.Object):
                         in_signature='a{sv}',
                         out_signature='ay')
     def ReadValue(self, options):
-        print('Default ReadValue called, returning error')
-        raise NotSupportedException()
+        if "read" in self.callbacks:
+            return self.callbacks["read"](self, options)
+        else:
+            print('Default ReadValue called, returning error')
+            raise NotSupportedException()
 
     @dbus.service.method(GATT_CHRC_IFACE, in_signature='aya{sv}')
     def WriteValue(self, value, options):
-        print('Default WriteValue called, returning error')
-        raise NotSupportedException()
+        if "write" in self.callbacks:
+            return self.callbacks["write"](self, value, options)
+        else:
+            print('Default WriteValue called, returning error')
+            raise NotSupportedException()
 
     # @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='hq')
     # def AcquireWrite(self, options):
@@ -77,13 +109,27 @@ class Characteristic(dbus.service.Object):
 
     @dbus.service.method(GATT_CHRC_IFACE)
     def StartNotify(self):
-        print('Default StartNotify called, returning error')
-        raise NotSupportedException()
+        if self.notifying:
+            return
+
+        self.notifying = True
+        if "startNotify" in self.callbacks:
+            return self.callbacks["startNotify"](self)
+        else:
+            print('Default StartNotify called, returning error')
+            raise NotSupportedException()
 
     @dbus.service.method(GATT_CHRC_IFACE)
     def StopNotify(self):
-        print('Default StopNotify called, returning error')
-        raise NotSupportedException()
+        if not self.notifying:
+            return
+
+        self.notifying = False
+        if "stopNotify" in self.callbacks:
+            self.callbacks["stopNotify"](self)
+        else:
+            print('Default StopNotify called, returning error')
+            raise NotSupportedException()
 
     @dbus.service.signal(DBUS_PROP_IFACE,
                          signature='sa{sv}as')

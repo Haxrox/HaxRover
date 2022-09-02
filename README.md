@@ -1,6 +1,6 @@
 # TODO:
 - [ ] Rewrite Android application to use [Nordic Android BLE Library](https://github.com/NordicSemiconductor/Android-BLE-Library) with [Nordic Scanner Compay Library](https://github.com/NordicSemiconductor/Android-Scanner-Compat-Library) for BLE connections and scanning, respectively
-- [ ] Redesign RPI BLE to use callbacks for `ReadValue` `WriteValue` `PropertiesChanged` methods
+- [x] Redesign RPI BLE to use callbacks for `ReadValue` `WriteValue` `PropertiesChanged` methods
 - [x] Figure out why descriptors cannot be added to services
 - [x] Stream video from HaxRover to Android application (still a bit buggy - might migrate to network streaming instead, where ble will be used to establish network credentials)
 

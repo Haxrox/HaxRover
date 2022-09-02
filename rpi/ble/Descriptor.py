@@ -14,6 +14,7 @@ class Descriptor(dbus.service.Object):
         self.uuid = uuid
         self.flags = flags
         self.characteristic = characteristic
+        self.callbacks = {}
         dbus.service.Object.__init__(self, bus, self.path)
 
     def get_properties(self):
@@ -24,6 +25,18 @@ class Descriptor(dbus.service.Object):
                         'Flags': self.flags,
                 }
         }
+
+    def get_uuid(self):
+        return self.uuid
+
+    def on(self, event, callback):
+        self.callbacks[event] = callback
+    
+    def on_read(self, callback):
+        self.callbacks["read"] = callback
+
+    def on_write(self, callback):
+        self.callbacks["write"] = callback
 
     def get_path(self):
         return dbus.ObjectPath(self.path)
@@ -41,10 +54,16 @@ class Descriptor(dbus.service.Object):
                         in_signature='a{sv}',
                         out_signature='ay')
     def ReadValue(self, options):
-        print ('Default ReadValue called, returning error')
-        raise NotSupportedException()
+        if "read" in self.callbacks:
+            return self.callbacks["read"](self, options)
+        else:
+            print('Default ReadValue called, returning error')
+            raise NotSupportedException()
 
     @dbus.service.method(GATT_DESC_IFACE, in_signature='aya{sv}')
     def WriteValue(self, value, options):
-        print('Default WriteValue called, returning error')
-        raise NotSupportedException()
+        if "write" in self.callbacks:
+            return self.callbacks["write"](self, value, options)
+        else:
+            print('Default WriteValue called, returning error')
+            raise NotSupportedException()

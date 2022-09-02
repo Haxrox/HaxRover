@@ -30,6 +30,9 @@ class Service(dbus.service.Object):
     def get_path(self):
         return dbus.ObjectPath(self.path)
 
+    def get_uuid(self):
+        return self.uuid
+
     def add_characteristic(self, characteristic):
         self.characteristics.append(characteristic)
 
@@ -41,6 +44,12 @@ class Service(dbus.service.Object):
 
     def get_characteristics(self):
         return self.characteristics
+
+    def find_characteristic(self, uuid):
+        for characteristic in self.characteristics:
+            if characteristic.get_uuid() == uuid:
+                return characteristic
+        return None
 
     @dbus.service.method(DBUS_PROP_IFACE,
                          in_signature='s',
