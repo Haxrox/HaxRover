@@ -59,7 +59,7 @@ def deinit_advertising(advertisement_manager, advertisements):
         advertisement_manager.UnregisterAdvertisement(advertisement)
         dbus.service.Object.remove_from_connection(advertisement)
 
-def init_gatt_server(bus, rover, camera):
+def init_gatt_server(bus):
     print("Initialize GATT Server")
     gatt_adapter = find_adapter(bus, GATT_MANAGER_IFACE)
 
