@@ -74,11 +74,11 @@ class RoverApplication(dbus.service.Object):
         direction = 'go_' + (''.join([str(v).lower() for v in value]))
         print("value: %s" % direction)
 
-        # try:
-        #     characteristic.value = value
-        #     getattr(self.rover, direction)()
-        # except:
-        #     print("Invalid command: " + direction)
+        try:
+            characteristic.value = value
+            getattr(self.rover, direction)()
+        except:
+            print("Invalid command: " + direction)
 
         # try:
         #     # characteristic.PropertiesChanged(GATT_CHRC_IFACE, {'Value': characteristic.value}, []) # WORKS given characteristic.value is correct
