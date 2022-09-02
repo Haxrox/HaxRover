@@ -114,7 +114,6 @@ class StreamingQueue(object):
         self.queue = Queue(0)
 
     def write(self, data):
-        print("Write")
         if data.startswith(b'\xff\xd8'):
             # New frame, copy the existing buffer's content and notify all
             # clients it's available
@@ -129,7 +128,7 @@ class StreamingQueue(object):
         self.queue = Queue(0)
     
     def get(self):
-        print("StreamingQueue.get() " + repr(self.queue.empty()))
+        # print("StreamingQueue.get() " + repr(self.queue.empty()))
         return self.queue.get()
 
     def close(self):
@@ -164,7 +163,7 @@ class Camera:
         while True:
             if self.capturing:
                 buffer = self.stream.get()
-                print("Length: " + str(len(buffer)))
+                # print("Length: " + str(len(buffer)))
 
                 parsedBytes = 0
 
