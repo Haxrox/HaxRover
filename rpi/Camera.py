@@ -14,8 +14,8 @@ import time
 # constants
 FRAME_SIZE = 510
 FRAMERATE = 24
-HEIGHT = 640
-WIDTH = 480
+HEIGHT = 128
+WIDTH = 128
 
 class CameraV1:
     capturing = False
@@ -183,7 +183,7 @@ class Camera:
         self.capturing = True
 
         if hasattr(self, "camera"):
-            self.camera.start_recording(self.stream, format='mjpeg')
+            self.camera.start_recording(self.stream, format='mjpeg', quality=0)
 
     def stop(self):
         self.capturing = False
