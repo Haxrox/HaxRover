@@ -2,22 +2,26 @@ import dbus
 import dbus.service
 from functools import partial
 from gi.repository import GLib
+from threading import Thread
 
 from ble.Constants import *
 from ble.Exceptions import *
 
 from services.RoverService import RoverService
 
+from Rover import Rover
+from Camera import Camera
+
 class RoverApplication(dbus.service.Object):
     """
     org.bluez.GattApplication1 interface implementation
     """
-    def __init__(self, bus, rover, camera):
+    def __init__(self, bus):
         self.path = '/haxrover'
         self.services = []
         self.bus = bus
-        self.rover = rover
-        self.camera = camera
+        self.rover = Rover()
+        self.camera = Camera()
 
         dbus.service.Object.__init__(self, bus, self.path)        
         roverService = RoverService(bus, 0)
@@ -124,6 +128,14 @@ class RoverApplication(dbus.service.Object):
 
     def register_callback(self):
         print("RoverApplication Registered - " + self.get_path())
+        roverThread = Thread(target=self.rover.run)
+        roverThread.daemon = True
+
+        cameraThread = Thread(target=self.camera.run)
+        cameraThread.daemon = True
+        
+        roverThread.start()
+        cameraThread.start()
 
     def register_error_callback(self, mainloop, error):
         mainloop.quit()

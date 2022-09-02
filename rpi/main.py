@@ -14,9 +14,6 @@ from ble.Exceptions import *
 from RoverAdvertisement import RoverAdvertisement
 from RoverApplication import RoverApplication
 
-from Rover import Rover
-from Camera import Camera
-
 mainloop = None
 rover_application = None
 
@@ -71,7 +68,7 @@ def init_gatt_server(bus, rover, camera):
     
     gatt_manager = dbus.Interface(bus.get_object(BLUEZ_SERVICE_NAME, gatt_adapter), GATT_MANAGER_IFACE)
 
-    rover_application = RoverApplication(bus, rover, camera)
+    rover_application = RoverApplication(bus)
 
     gatt_manager.RegisterApplication(rover_application.get_path(), {},
         reply_handler = partial(rover_application.register_callback),
@@ -121,20 +118,8 @@ def main():
     global rover_application
     mainloop = GLib.MainLoop()
 
-    rover = Rover()
-    camera = Camera()
-
-    roverThread = Thread(target=rover.run)
-    roverThread.daemon = True
-
-    cameraThread = Thread(target=camera.run)
-    cameraThread.daemon = True
-    
-    roverThread.start()
-    cameraThread.start()
-
     advertisement_manager, advertisements = init_advertising(bus)
-    gatt_manager, rover_application = init_gatt_server(bus, rover, camera)
+    gatt_manager, rover_application = init_gatt_server(bus)
     init_object_manager(bus)
 
     signal.signal(signal.SIGINT, sigint_handler)
